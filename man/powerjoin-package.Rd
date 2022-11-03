@@ -6,9 +6,9 @@
 \alias{powerjoin-package}
 \title{powerjoin: Extensions of 'dplyr' and 'fuzzyjoin' Join Functions}
 \description{
-\if{html}{\figure{logo.png}{options: align='right' alt='logo' width='120'}}
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Extensions of 'dplyr' and 'fuzzyjoin' join functions. Packed with features to preprocess the data, apply various data checks, and deal with conflicting columns.
+We extend 'dplyr' and 'fuzzyjoin' join functions with features to preprocess the data, apply various data checks, and deal with conflicting columns.
 }
 \seealso{
 Useful links:
