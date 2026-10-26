@@ -6,7 +6,8 @@ join_mutate <- function(
   # powerjoin args
   check = check_specs(),
   conflict = NULL,
-  fill = NULL) {
+  fill = NULL,
+  env) {
   check <- complete_specs(check)
   #-----------------------------------------------------------------------------
   # checks on raw data
@@ -14,7 +15,8 @@ join_mutate <- function(
   check_grouped(x, y, check)
   #-----------------------------------------------------------------------------
   # transform `by` to list of `x`, `y` and more if fuzzy
-  by <- preprocess_by(tbl_vars(x), tbl_vars(y), by = by, check = check)
+  na_equal <- check_na_matches(na_matches)
+  by <- preprocess_by(tbl_vars(x), tbl_vars(y), by = by, check = check, na_equal = na_equal, env = env)
   #-----------------------------------------------------------------------------
   # check keep's values and assess right default if relevant
   keep <- match_keep(keep, by$fuzzy)
@@ -34,7 +36,6 @@ join_mutate <- function(
   check_na_keys(x, y, by, check)
   #-----------------------------------------------------------------------------
   # dplyr original code
-  na_equal <- check_na_matches(na_matches)
   x_in <- as_tibble(x, .name_repair = "minimal")
   y_in <- as_tibble(y, .name_repair = "minimal")
   #-----------------------------------------------------------------------------
@@ -201,8 +202,9 @@ join_cols <- function(
   # original dplyr code
   suffix <- standardise_join_suffix(suffix)
   # x_by and y_by are named vectors of positions
-  x_by <- set_names(match(by$x, x_names), by$x)
-  y_by <- set_names(match(by$y, y_names), by$x)
+  by_equi <- if (by$fuzzy) list(x = names(by$equi_keys), y = unlist(by$equi_keys)) else by
+  x_by <- set_names(match(by_equi$x, x_names), by_equi$x)
+  y_by <- set_names(match(by_equi$y, y_names), by_equi$x)
   x_loc <- seq_along(x_names)
   y_loc <- seq_along(y_names)
   names(x_loc) <- x_names
@@ -316,7 +318,7 @@ join_rows <- function(x_key, y_key, type = c("inner", "left", "right", "full"),
   if (type == "left" || type == "full") {
     if (anyNA(matches)) {
       y_loc <- vec_assign(
-        y_loc, vec_equal_na(matches),
+        y_loc, vec_detect_missing(matches),
         list(NA_integer_)
       )
     }
